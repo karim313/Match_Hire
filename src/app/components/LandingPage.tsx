@@ -30,6 +30,21 @@ const features = [
     title: 'مطابقة الوظائف',
     desc: 'احصل على توصيات وظيفية مخصصة بناءً على مهاراتك وخبراتك',
   },
+  {
+    icon: <FileCheck className="w-7 h-7" style={{ color: '#4f8ef7' }} />,
+    title: 'تقارير احترافية',
+    desc: 'احصل على تقارير مفصلة تساعدك في تحسين نقاط الضعف في سيرتك الذاتية',
+  },
+  {
+    icon: <TrendingUp className="w-7 h-7" style={{ color: '#4f8ef7' }} />,
+    title: 'تتبع التقديمات',
+    desc: 'تابع حالة تقديماتك للوظائف المختلفة في مكان واحد وبسهولة تامة',
+  },
+  {
+    icon: <Users className="w-7 h-7" style={{ color: '#4f8ef7' }} />,
+    title: 'نصائح مهنية',
+    desc: 'احصل على نصائح مخصصة لتحسين ملفك الشخصي وزيادة فرص قبولك',
+  },
 ];
 
 const whyItems = [
@@ -41,7 +56,7 @@ const whyItems = [
 
 export function LandingPage() {
   const router = useRouter();
-  const [emblaRef] = useEmblaCarousel({ loop: true, direction: 'rtl' }, [Autoplay({ delay: 4000 })]);
+  const [emblaRef] = useEmblaCarousel({ loop: true, direction: 'rtl' }, [Autoplay({ delay: 3000, stopOnInteraction: false })]);
 
   return (
     <div className="w-full text-white">

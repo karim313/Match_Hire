@@ -7,13 +7,23 @@ import { Upload, FileText, Check, Briefcase, TrendingUp, Loader2 } from 'lucide-
 import { motion, AnimatePresence } from 'framer-motion';
 import { cvService } from '@/services/cvService';
 import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
 
 export function CVUpload() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [uploaded, setUploaded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<{ skills: string[], jobs: any[] } | null>(null);
   const [fileName, setFileName] = useState('');
+
+  useEffect(() => {
+    if (session === undefined) return;
+    if (!session) {
+      router.push('/login');
+    }
+  }, [session, router]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
