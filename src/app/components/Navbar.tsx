@@ -71,7 +71,7 @@ export function Navbar() {
         items={navItems}
         baseColor="rgba(10, 10, 15, 0.6)"
         menuColor="#ffffff"
-        buttonBgColor="#4f8ef7"
+        buttonBgColor="rgba(9, 11, 26, 0.7)"
         buttonTextColor="#ffffff"
         ease="power3.out"
         ctaText="ابدأ الآن"

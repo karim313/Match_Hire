@@ -391,14 +391,19 @@ export function CVUpload() {
           </p>
         </motion.div>
 
-        {/* Two-column grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Two-column grid / Single column centered on mobile */}
+        <div className={`grid gap-6 items-start ${
+          uploaded && results 
+            ? 'grid-cols-1 lg:grid-cols-2 max-w-4xl lg:max-w-7xl mx-auto' 
+            : 'grid-cols-1 lg:grid-cols-2'
+        }`}>
 
-          {/* ── Left: Upload ──────────────────── */}
+          {/* ── Left: Upload/Success (Main Column) ──────────────────── */}
           <motion.div
-            initial={{ opacity: 0, x: -24 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
+            className={`w-full ${uploaded && results ? 'max-w-md lg:max-w-none mx-auto' : ''}`}
           >
             <AnimatePresence mode="wait">
               {!uploaded && !analyzing ? (
@@ -415,11 +420,11 @@ export function CVUpload() {
                   <AiThinking />
                 </motion.div>
               ) : (
-                <motion.div
+                 <motion.div
                   key="success"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="glass-card p-8 text-center"
+                  className="glass-card p-6 sm:p-8 text-center w-full shadow-2xl"
                 >
                   <motion.div
                     initial={{ scale: 0 }}
@@ -446,40 +451,31 @@ export function CVUpload() {
               )}
             </AnimatePresence>
 
-            {/* Skills */}
+            {/* Skills (Appears below success on mobile) */}
             <AnimatePresence>
               {!analyzing && uploaded && results && (
                 <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 glass-card p-5"
+                  className="mt-4 glass-card p-5 shadow-xl"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="flex items-center gap-2 font-bold text-sm text-white/80">
                       <TrendingUp className="w-4 h-4 text-primary" />
                       المهارات المستخرجة
                     </h3>
-                    <div className="flex gap-2">
-                      <span className="flex items-center gap-1 text-[10px] text-green-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-400" /> متوفرة
-                      </span>
-                      <span className="flex items-center gap-1 text-[10px] text-yellow-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" /> جزئية
-                      </span>
-                    </div>
                   </div>
                   
                   <div className="flex flex-wrap gap-2">
                     {results.skills.map((s, i) => {
-                      // Mocking status for visual flair
                       const status = i % 3 === 0 ? 'matched' : i % 5 === 0 ? 'partial' : 'matched';
                       return (
                         <motion.span
                           key={i}
                           initial={{ scale: 0, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
-                          transition={{ delay: i * 0.04, type: 'spring', stiffness: 300 }}
-                          className={`px-3 py-1 rounded-lg text-xs font-medium border ${
+                          transition={{ delay: i * 0.04 }}
+                          className={`px-3 py-1 rounded-lg text-[10px] font-medium border ${
                             status === 'matched' 
                               ? 'bg-green-500/10 border-green-500/20 text-green-400' 
                               : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400'
@@ -495,11 +491,12 @@ export function CVUpload() {
             </AnimatePresence>
           </motion.div>
 
-          {/* ── Right: Results ────────────────── */}
+          {/* ── Right: Results (Secondary Column) ────────────────── */}
           <motion.div
-            initial={{ opacity: 0, x: 24 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, delay: 0.05 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className={`w-full ${uploaded && results ? 'max-w-md lg:max-w-none mx-auto' : ''}`}
           >
             <AnimatePresence mode="wait">
               {analyzing ? (
@@ -512,38 +509,35 @@ export function CVUpload() {
                   <ScanningJobsSkeleton />
                 </motion.div>
               ) : uploaded && results ? (
-                <motion.div
+                 <motion.div
                   key="results"
-                  initial={{ opacity: 0, x: 16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="space-y-4"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-4 w-full"
                 >
                   {/* Compatibility Score Card */}
                   <motion.div 
                     initial={{ scale: 0.95, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="p-6 rounded-3xl border border-primary/20 bg-primary/5 text-center relative overflow-hidden"
+                    className="p-6 rounded-3xl border border-primary/20 bg-primary/5 text-center relative overflow-hidden shadow-2xl"
                   >
                     <div className="absolute top-0 right-0 p-2">
                       <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
                     </div>
-                    <p className="text-white/50 text-xs mb-1 uppercase tracking-widest font-bold">نسبة التوافق</p>
+                    <p className="text-white/50 text-[10px] mb-1 uppercase font-bold">نسبة التوافق</p>
                     <div className="text-5xl font-black text-primary mb-2">
                       <CountUp end={85} />
                     </div>
-                    <p className="text-white/40 text-[10px] leading-relaxed">
-                      تم تحليل مهاراتك ومقارنتها بمتطلبات سوق العمل الحالية في مجالك.
+                    <p className="text-white/40 text-[9px]">
+                      تم تحليل مهاراتك ومقارنتها بسوق العمل.
                     </p>
                   </motion.div>
 
                   <div className="flex items-center justify-between px-1">
-                    <h3 className="font-bold flex items-center gap-2 text-base">
+                    <h3 className="font-bold flex items-center gap-2 text-sm">
                       <Briefcase className="w-4 h-4 text-primary" />
                       وظائف مقترحة
                     </h3>
-                    <span className="text-xs px-2.5 py-1 rounded-full" style={{ background: 'rgba(79,142,247,0.1)', color: '#4f8ef7' }}>
-                      {results.jobs.length} وظيفة
-                    </span>
                   </div>
 
                   <div className="space-y-2">
@@ -556,35 +550,27 @@ export function CVUpload() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
-                        whileHover={{ x: -4, transition: { duration: 0.15 } }}
-                        className="job-card flex items-center justify-between group p-4"
+                        className="job-card flex items-center justify-between group p-3 sm:p-4"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div
-                            className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
-                            style={{ background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.12)' }}
-                          >
-                            <Briefcase className="w-5 h-5 text-primary/60" />
+                          <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/5 border border-white/10">
+                            <Briefcase className="w-4 h-4 text-primary/60" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-white font-semibold text-sm truncate">{job.title}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-white/35 text-[10px]">{job.source || 'Wuzzuf'}</span>
-                              <div className="w-1 h-1 rounded-full bg-white/10" />
-                              <span className="text-primary/70 text-[10px] font-bold">مطابقة عالية</span>
-                            </div>
+                            <p className="text-white font-semibold text-xs truncate">{job.title}</p>
+                            <span className="text-white/35 text-[10px]">{job.source || 'Wuzzuf'}</span>
                           </div>
                         </div>
-                        <span className="text-white/20 group-hover:text-primary transition-colors text-lg mr-1">←</span>
+                        <span className="text-white/20 group-hover:text-primary transition-colors">←</span>
                       </motion.a>
                     ))}
                   </div>
 
                   <button
                     onClick={() => router.push('/dashboard')}
-                    className="w-full mt-4 btn-primary py-4 text-sm font-bold"
+                    className="btn-primary w-full py-4 text-sm font-bold shadow-xl"
                   >
-                    عرض التفاصيل الكاملة في لوحة التحكم
+                    عرض التفاصيل في لوحة التحكم
                   </button>
                 </motion.div>
               ) : (
@@ -595,11 +581,7 @@ export function CVUpload() {
                   className="glass-card p-14 text-center"
                 >
                   <Briefcase className="w-10 h-10 mb-4 mx-auto text-white/20" />
-                  <p className="text-sm text-white/50">
-                    فرصك الوظيفية بانتظارك
-                    <br />
-                    <span className="text-xs text-white/25">ارفع CV بتاعك الأول</span>
-                  </p>
+                  <p className="text-sm text-white/50">فرصك الوظيفية بانتظارك</p>
                 </motion.div>
               )}
             </AnimatePresence>
