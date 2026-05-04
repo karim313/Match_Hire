@@ -12,5 +12,10 @@ export const cvService = {
   getMyCvs: async () => {
     const response = await api.get('/Cv/my-cvs');
     return response.data;
+  },
+  downloadCv: async (fileName: string) => {
+    return await api.get(`/Cv/download/${fileName}`, {
+      responseType: 'blob',
+    });
   }
 };

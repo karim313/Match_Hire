@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { FileText, Download, Eye, CheckCircle, Clock, Home, Upload, Settings, LogOut, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ThemeToggle } from './ThemeToggle';
+import { toast } from 'sonner';
 
 import { useSession } from 'next-auth/react';
 import { cvService } from '@/services/cvService';
@@ -18,6 +19,7 @@ export function Dashboard() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [stats, setStats] = useState({ cvCount: 0, views: 0, matches: 0 });
   const [loading, setLoading] = useState(true);
+  const [selectedCv, setSelectedCv] = useState<any>(null);
 
   useEffect(() => {
     // If session is still loading, wait
@@ -32,17 +34,55 @@ export function Dashboard() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [cvsData, jobsData] = await Promise.all([
+        const [cvsData, allJobsData] = await Promise.all([
           cvService.getMyCvs(),
           jobService.getAllJobs()
         ]);
         
-        setDocuments(cvsData || []);
+        const sortedCvs = (cvsData || []).sort((a: any, b: any) => 
+          new Date(b.uploadedAt || 0).getTime() - new Date(a.uploadedAt || 0).getTime()
+        );
+        
+        const latestCv = sortedCvs[0];
+        let lastMatchCount = 0;
+        const allJobs = Array.isArray(allJobsData) ? allJobsData : [];
+
+        if (latestCv) {
+          const analysis = latestCv.analysis || {};
+          const jobsSource = analysis.suggestedJobs || analysis.suggested_jobs || 
+                             analysis.jobs || analysis.jobSuggestions || analysis.matchedJobs || 
+                             analysis.jobMatches || latestCv.suggestedJobs || latestCv.jobs;
+          
+          let jobs = [];
+          if (jobsSource) {
+            jobs = typeof jobsSource === 'string' ? JSON.parse(jobsSource) : jobsSource;
+          }
+
+          // Fallback matching if empty
+          if (!Array.isArray(jobs) || jobs.length === 0) {
+            let skills = [];
+            if (analysis.skills) {
+              skills = typeof analysis.skills === 'string' ? JSON.parse(analysis.skills) : analysis.skills;
+            }
+            if (Array.isArray(skills) && skills.length > 0) {
+              jobs = allJobs.filter((job: any) => 
+                skills.some(skill => 
+                  job.title?.toLowerCase().includes(skill.toLowerCase())
+                )
+              ).slice(0, 10);
+            }
+          }
+          
+          lastMatchCount = Array.isArray(jobs) ? jobs.length : 0;
+        }
+
+        setDocuments(sortedCvs);
         setStats({
-          cvCount: cvsData?.length || 0,
+          cvCount: sortedCvs.length,
           views: 0,
-          matches: jobsData?.length || 0
+          matches: lastMatchCount
         });
+        (window as any).allJobs = allJobs;
       } catch (err) {
         console.error('Detailed Dashboard Error:', err);
       } finally {
@@ -52,6 +92,40 @@ export function Dashboard() {
     
     fetchData();
   }, [session, router]);
+
+  const handleDownload = async (storedFileName: string, originalFileName: string) => {
+    if (!storedFileName) {
+      toast.error('عذراً، اسم الملف غير موجود');
+      return;
+    }
+
+    try {
+      console.log('Attempting to download:', storedFileName);
+      const response = await cvService.downloadCv(storedFileName);
+      
+      if (!response || !response.data) {
+        throw new Error('No data received from server');
+      }
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', originalFileName || 'cv.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('بدأ التحميل...');
+    } catch (err: any) {
+      console.error('Download error details:', err);
+      const status = err.response?.status;
+      if (status === 404) {
+        toast.error('الملف غير موجود على الخادم (404)');
+      } else {
+        toast.error('حدث خطأ أثناء تحميل الملف');
+      }
+    }
+  };
 
   return (
     <div className="w-full relative z-10">
@@ -142,7 +216,11 @@ export function Dashboard() {
                 }
                 
                 return (
-                  <div key={doc.id || index} className="job-card flex items-center justify-between">
+                  <div 
+                    key={doc.id || index} 
+                    className="job-card flex items-center justify-between cursor-pointer hover:border-primary/30 transition-colors"
+                    onClick={() => setSelectedCv(doc)}
+                  >
                     <div className="flex items-center gap-4">
                       <div className="icon-badge flex-shrink-0">
                         <FileText className="w-5 h-5" />
@@ -160,15 +238,6 @@ export function Dashboard() {
                         <CheckCircle className="w-3 h-3" />
                         مكتمل
                       </span>
-                      <a
-                        href={`/api/proxy/Cv/download/${doc.storedFileName}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-lg transition-all hover:bg-primary/10"
-                        style={{ color: 'rgba(255,255,255,0.4)' }}
-                      >
-                        <Download className="w-4 h-4" />
-                      </a>
                     </div>
                   </div>
                 );
@@ -182,6 +251,130 @@ export function Dashboard() {
             )}
           </div>
         </div>
+
+        {/* Detailed View Modal */}
+        {selectedCv && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setSelectedCv(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="glass-card w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-1">{selectedCv.originalFileName}</h3>
+                  <p className="text-sm text-white/40">نتائج تحليل الذكاء الاصطناعي</p>
+                </div>
+                <button 
+                  onClick={() => setSelectedCv(null)}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <LogOut className="w-5 h-5 rotate-180" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+                {/* Skills Section */}
+                <div>
+                  <h4 className="flex items-center gap-2 font-bold mb-4 text-primary">
+                    <TrendingUp className="w-5 h-5" />
+                    المهارات المستخرجة
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {(() => {
+                      try {
+                        const skills = typeof selectedCv.analysis?.skills === 'string'
+                          ? JSON.parse(selectedCv.analysis.skills)
+                          : selectedCv.analysis?.skills || [];
+                        return Array.isArray(skills) && skills.length > 0 ? (
+                          skills.map((s: string, i: number) => (
+                            <span key={i} className="skill-tag px-3 py-1.5 text-sm">{s}</span>
+                          ))
+                        ) : <p className="text-white/30 text-sm italic">لم يتم استخراج مهارات</p>
+                      } catch(e) {
+                        return <p className="text-red-400/60 text-sm">خطأ في عرض المهارات</p>
+                      }
+                    })()}
+                  </div>
+                </div>
+
+                {/* Jobs Section */}
+                <div>
+                  <h4 className="flex items-center gap-2 font-bold mb-4 text-primary">
+                    <CheckCircle className="w-5 h-5" />
+                    الوظائف المقترحة
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(() => {
+                      try {
+                        const analysis = selectedCv.analysis || {};
+                        const jobsSource = analysis.suggestedJobs || analysis.suggested_jobs || 
+                                           analysis.jobs || analysis.jobSuggestions || analysis.matchedJobs || 
+                                           analysis.jobMatches || selectedCv.suggestedJobs || selectedCv.jobs;
+                        
+                        let jobs = [];
+                        if (jobsSource) {
+                          jobs = typeof jobsSource === 'string' ? JSON.parse(jobsSource) : jobsSource;
+                        }
+
+                        // Fallback matching if empty
+                        if (!Array.isArray(jobs) || jobs.length === 0) {
+                          const allJobs = (window as any).allJobs || [];
+                          let skills = [];
+                          if (analysis.skills) {
+                            skills = typeof analysis.skills === 'string' ? JSON.parse(analysis.skills) : analysis.skills;
+                          }
+                          if (Array.isArray(skills) && skills.length > 0) {
+                            jobs = allJobs.filter((job: any) => 
+                              skills.some(skill => 
+                                job.title?.toLowerCase().includes(skill.toLowerCase())
+                              )
+                            ).slice(0, 10);
+                          }
+                        }
+                        
+                        return Array.isArray(jobs) && jobs.length > 0 ? (
+                          jobs.map((job: any, i: number) => (
+                            <a 
+                              key={i} 
+                              href={job.url || '#'} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="job-card p-4 flex flex-col gap-2 hover:border-primary/40 transition-all group"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-white group-hover:text-primary transition-colors">{job.title}</span>
+                                <TrendingUp className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                              <span className="text-xs text-white/40">{job.source || 'Wuzzuf'}</span>
+                            </a>
+                          ))
+                        ) : <p className="text-white/30 text-sm italic">لا توجد وظائف مقترحة حالياً</p>
+                      } catch(e) {
+                        return <p className="text-red-400/60 text-sm">خطأ في عرض الوظائف</p>
+                      }
+                    })()}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="p-4 bg-white/5 border-t border-white/10 text-center">
+                <button 
+                  onClick={() => setSelectedCv(null)}
+                  className="btn-primary px-8"
+                >
+                  إغلاق النافذة
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </div>
     </div>
   );

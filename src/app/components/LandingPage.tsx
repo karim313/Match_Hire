@@ -7,6 +7,7 @@ import TextType from './TextType';
 
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
+import { useSession } from 'next-auth/react';
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 32 },
@@ -56,6 +57,7 @@ const whyItems = [
 
 export function LandingPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [emblaRef] = useEmblaCarousel({ loop: true, direction: 'rtl' }, [Autoplay({ delay: 3000, stopOnInteraction: false })]);
 
   return (
@@ -105,7 +107,7 @@ export function LandingPage() {
               ابدأ التحليل المجاني
             </button>
             <button
-              onClick={() => router.push('/login')}
+              onClick={() => router.push(session ? '/dashboard' : '/login')}
               className="px-8 py-4 rounded-xl text-lg font-medium transition-all hover:-translate-y-0.5"
               style={{
                 background: 'rgba(255,255,255,0.05)',
@@ -113,7 +115,7 @@ export function LandingPage() {
                 border: '1px solid rgba(255,255,255,0.15)',
               }}
             >
-              تسجيل الدخول
+              {session ? 'لوحة التحكم' : 'تسجيل الدخول'}
             </button>
           </div>
         </motion.div>
