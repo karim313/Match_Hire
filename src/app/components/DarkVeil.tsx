@@ -83,7 +83,7 @@ export default function DarkVeil({
   speed = 0.5,
   scanlineFrequency = 0,
   warpAmount = 0,
-  resolutionScale = 1
+  resolutionScale = 0.5
 }: any) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -93,7 +93,7 @@ export default function DarkVeil({
     if (!parent) return;
 
     const renderer = new Renderer({
-      dpr: Math.min(window.devicePixelRatio, 2),
+      dpr: Math.min(window.devicePixelRatio, 1.2),
       canvas
     });
 

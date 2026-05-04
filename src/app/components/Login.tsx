@@ -148,7 +148,7 @@ export function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 mt-2 bg-primary text-primary-foreground rounded-xl font-bold shadow-[0_8px_16px_rgba(79,142,247,0.2)] hover:shadow-[0_8px_20px_rgba(79,142,247,0.3)] hover:-translate-y-0.5 transition-all active:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0 disabled:shadow-none flex items-center justify-center gap-2"
+                className="btn-primary w-full py-4 mt-2"
               >
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />

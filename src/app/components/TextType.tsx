@@ -183,7 +183,23 @@ const TextType = ({
       {displayedText.split('\n').map((line, idx, arr) => (
         <span 
           key={idx} 
-          style={idx === 0 ? { display: 'block', fontSize: '3.5rem', fontWeight: 'bold', marginBottom: '1.5rem', color: '#ffffff' } : { display: 'block', fontSize: '1.25rem', color: 'rgba(255,255,255,0.7)', fontWeight: 'normal' }}
+          style={idx === 0 
+            ? { 
+                display: 'block', 
+                fontSize: 'clamp(1.8rem, 5vw, 3.5rem)', 
+                fontWeight: 'bold', 
+                marginBottom: 'clamp(0.75rem, 2vw, 1.5rem)', 
+                color: '#ffffff',
+                lineHeight: '1.2',
+              } 
+            : { 
+                display: 'block', 
+                fontSize: 'clamp(0.95rem, 2vw, 1.25rem)', 
+                color: 'rgba(255,255,255,0.65)', 
+                fontWeight: 'normal',
+                lineHeight: '1.6',
+              }
+          }
         >
           {line}
           {/* Show cursor only on the last visible line being typed */}

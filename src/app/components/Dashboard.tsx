@@ -130,7 +130,7 @@ export function Dashboard() {
   return (
     <div className="w-full relative z-10">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-8 mt-10">
+        <div className="mb-12 mt-24">
           <h2 className="mb-2 section-title">لوحة التحكم</h2>
           <p className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
             مرحباً بك، {displayName}. إليك ملخص نشاطك وسيرك الذاتية
@@ -195,7 +195,7 @@ export function Dashboard() {
             </h3>
             <button
               onClick={() => router.push('/upload')}
-              className="btn-primary text-sm py-2 px-5"
+              className="btn-primary text-sm py-2 px-6"
             >
               رفع سيرة جديدة
             </button>
@@ -234,8 +234,18 @@ export function Dashboard() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full" style={{ background: 'rgba(34,197,94,0.1)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.2)' }}>
-                        <CheckCircle className="w-3 h-3" />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(doc.storedFileName, doc.originalFileName);
+                        }}
+                        className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all group/btn"
+                        title="تحميل الملف"
+                      >
+                        <Download className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                      </button>
+                      <span className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full" style={{ background: 'rgba(34,197,94,0.1)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.2)' }}>
+                        <CheckCircle className="w-3.5 h-3.5" />
                         مكتمل
                       </span>
                     </div>
@@ -257,13 +267,14 @@ export function Dashboard() {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-[9999] flex items-center justify-center pt-20 pb-10 px-4 bg-black/90 backdrop-blur-2xl"
             onClick={() => setSelectedCv(null)}
           >
             <motion.div 
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              className="glass-card w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+              className="glass-card w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-[0_40px_100px_rgba(0,0,0,0.9)] border-white/10"
+              style={{ background: 'rgba(5, 5, 10, 0.98)' }}
               onClick={e => e.stopPropagation()}
             >
               <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/5">
@@ -364,10 +375,10 @@ export function Dashboard() {
                 </div>
               </div>
               
-              <div className="p-4 bg-white/5 border-t border-white/10 text-center">
+              <div className="p-6 bg-white/[0.03] border-t border-white/5 text-center">
                 <button 
                   onClick={() => setSelectedCv(null)}
-                  className="btn-primary px-8"
+                  className="btn-primary px-12 py-4"
                 >
                   إغلاق النافذة
                 </button>

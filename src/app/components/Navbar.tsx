@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import { Home, LogIn, UploadCloud, LayoutDashboard, LogOut } from 'lucide-react';
+import { Home, LogIn, UploadCloud, LayoutDashboard, LogOut, Brain } from 'lucide-react';
 import CardNav from './CardNav';
 
 export function Navbar() {
@@ -38,18 +38,14 @@ export function Navbar() {
     return items;
   }, [pathname, session]);
 
-  const VideoLogo = (
+  const LogoIcon = (
     <div style={{
-      width: 38, height: 38, borderRadius: 10, overflow: 'hidden', flexShrink: 0,
-      boxShadow: '0 4px 12px rgba(79,142,247,0.3)',
-      background: 'rgba(79,142,247,0.15)',
+      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+      background: 'linear-gradient(135deg, #4f8ef7, #8b5cf6)',
+      boxShadow: '0 4px 14px rgba(79,142,247,0.35)',
       display: 'flex', alignItems: 'center', justifyContent: 'center'
     }}>
-      <video
-        src="/images/hero%20logo.mp4"
-        autoPlay loop muted playsInline
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-      />
+      <Brain size={18} color="#fff" />
     </div>
   );
 
@@ -61,8 +57,8 @@ export function Navbar() {
     >
       <CardNav
         logo={
-          <Link href="/" className="flex items-center gap-3 cursor-pointer">
-            {VideoLogo}
+          <Link href="/" className="flex items-center gap-2.5 cursor-pointer">
+            {LogoIcon}
             <span style={{
               fontWeight: 700, fontSize: '1.15rem',
               background: 'linear-gradient(135deg,#fff,#4f8ef7)',
