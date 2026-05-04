@@ -1,10 +1,12 @@
+'use client'
+
+import { useRouter } from 'next/navigation';
 import { Upload, Brain, Target, TrendingUp, Users, FileCheck, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import TextType from './TextType';
 
-interface LandingPageProps {
-  onNavigate: (screen: string) => void;
-}
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 32 },
@@ -37,7 +39,10 @@ const whyItems = [
   { icon: <Zap className="w-6 h-6" style={{ color: '#4f8ef7' }} />, title: 'دقة عالية', desc: 'نسبة دقة تصل إلى 95% في استخراج المهارات والمطابقة' },
 ];
 
-export function LandingPage({ onNavigate }: LandingPageProps) {
+export function LandingPage() {
+  const router = useRouter();
+  const [emblaRef] = useEmblaCarousel({ loop: true, direction: 'rtl' }, [Autoplay({ delay: 4000 })]);
+
   return (
     <div className="w-full text-white">
       {/* ── Hero ─────────────────────────────── */}
@@ -54,17 +59,16 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
             مدعوم بالذكاء الاصطناعي
           </motion.div>
 
-          <div className="mb-10 text-center" style={{ minHeight: '200px' }}>
+          <div className="mb-10 text-center" style={{ minHeight: '180px' }}>
             <TextType 
               as="h2"
               className="font-bold leading-tight"
-              style={{ fontSize: '3.5rem', color: '#ffffff', whiteSpace: 'pre-wrap' }}
+              style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', color: '#ffffff', whiteSpace: 'pre-wrap' }}
               text={[
-                "هندس مسيرتك المهنية بالذكاء الاصطناعي\n\nمنصة متقدمة لتحليل السيرة الذاتية بدقة عالية.",
-                "اكتشف مستقبلك الوظيفي بالذكاء الاصطناعي\n\nاستخرج مهاراتك التقنية بدقة وسرعة فائقة.",
-                "طور مسارك المهني بالذكاء الاصطناعي\n\nاحصل على توصيات وظيفية مخصصة لخبراتك.",
-                "عزز فرصك الوظيفية بالذكاء الاصطناعي\n\nاكتشف إمكانياتك الحقيقية في سوق العمل.",
-                "ابنِ سيرة ذاتية لا تُقهر بالذكاء الاصطناعي\n\nحقق حلمك المهني بخطوات ذكية ومدروسة."
+                "حلل سيرتك الذاتية بذكاء\n\nواكتشف وظيفتك المثالية الآن.",
+                "طابق مهاراتك مع سوق العمل\n\nبدقة متناهية وسرعة فائقة.",
+                "أعد هندسة مسارك المهني\n\nبأحدث تقنيات الذكاء الاصطناعي.",
+                "مستقبلك يبدأ من تحليل ذكي\n\nاكتشف آفاقاً مهنية جديدة."
               ]}
               typingSpeed={40}
               deletingSpeed={20}
@@ -75,7 +79,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => onNavigate('upload')}
+              onClick={() => router.push('/upload')}
               className="px-8 py-4 rounded-xl text-lg font-semibold transition-all hover:-translate-y-0.5"
               style={{
                 background: '#4f8ef7',
@@ -86,7 +90,7 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
               ابدأ التحليل المجاني
             </button>
             <button
-              onClick={() => onNavigate('login')}
+              onClick={() => router.push('/login')}
               className="px-8 py-4 rounded-xl text-lg font-medium transition-all hover:-translate-y-0.5"
               style={{
                 background: 'rgba(255,255,255,0.05)',
@@ -99,78 +103,84 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
           </div>
         </motion.div>
 
-        {/* ── Feature Cards ─────────────────── */}
-        <div className="grid md:grid-cols-3 gap-6 mb-20">
-          {features.map((item, i) => (
-            <motion.div
-              key={i}
-              {...fadeUp(0.1 + i * 0.1)}
-              whileHover={{ y: -6, transition: { duration: 0.2 } }}
-              className="group p-7 rounded-2xl cursor-default"
-              style={{
-                background: 'rgba(20,20,30,0.5)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
-              }}
-            >
-              <div
-                className="w-14 h-14 rounded-xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110"
-                style={{ background: 'rgba(79,142,247,0.15)' }}
+        {/* ── Feature Slider ─────────────────── */}
+        <div className="overflow-hidden mb-20 px-4" ref={emblaRef}>
+          <div className="flex gap-6">
+            {features.map((item, i) => (
+              <motion.div
+                key={i}
+                className="flex-[0_0_100%] md:flex-[0_0_calc(33.333%-16px)] min-w-0"
               >
-                {item.icon}
-              </div>
-              <h3 className="font-semibold mb-2" style={{ color: '#ffffff' }}>{item.title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>{item.desc}</p>
-            </motion.div>
-          ))}
+                <motion.div
+                  whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                  className="group p-8 rounded-3xl cursor-default h-full"
+                  style={{
+                    background: 'rgba(20,20,30,0.5)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  <div
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/20"
+                    style={{ background: 'rgba(79,142,247,0.1)' }}
+                  >
+                    {item.icon}
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 text-white">{item.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed text-base">{item.desc}</p>
+                </motion.div>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         {/* ── Stats Banner ──────────────────── */}
         <motion.div
           {...fadeUp(0.3)}
-          className="rounded-2xl p-12 mb-20 text-white"
+          className="rounded-2xl mb-20 text-white"
           style={{ 
             background: 'rgba(20,20,30,0.6)', 
             border: '1px solid rgba(79,142,247,0.2)',
             backdropFilter: 'blur(24px)',
-            boxShadow: 'inset 0 0 40px rgba(79,142,247,0.1)'
+            boxShadow: 'inset 0 0 40px rgba(79,142,247,0.1)',
+            padding: 'clamp(1.5rem, 4vw, 3rem)',
           }}
         >
-          <div className="text-center mb-12">
-            <h3 className="mb-3 font-bold" style={{ fontSize: '2.2rem' }}>إحصائيات منصتنا</h3>
-            <p className="text-lg" style={{ opacity: 0.85 }}>أرقام تعكس ثقة عملائنا ونجاحهم المهني</p>
+          <div className="text-center mb-8">
+            <h3 className="mb-3 font-bold" style={{ fontSize: 'clamp(1.35rem, 3vw, 2.2rem)' }}>إحصائيات منصتنا</h3>
+            <p style={{ opacity: 0.7, fontSize: '0.95rem' }}>أرقام تعكس ثقة عملائنا ونجاحهم المهني</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
               { val: '500K+', label: 'سيرة ذاتية محللة' },
               { val: '95%', label: 'نسبة الدقة' },
               { val: '50K+', label: 'وظيفة متاحة' },
             ].map((s, i) => (
               <motion.div key={i} {...fadeUp(0.1 + i * 0.08)} className="text-center">
-                <div className="font-bold mb-1" style={{ fontSize: '3rem' }}>{s.val}</div>
-                <div style={{ opacity: 0.85 }}>{s.label}</div>
+                <div className="font-bold mb-1" style={{ fontSize: 'clamp(2rem, 4vw, 3rem)' }}>{s.val}</div>
+                <div style={{ opacity: 0.7, fontSize: '0.9rem' }}>{s.label}</div>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
         {/* ── Why Match Hire ────────────────── */}
-        <motion.div {...fadeUp(0.2)} className="text-center mb-4">
-          <h3 className="font-bold mb-2" style={{ fontSize: '2rem', color: '#ffffff' }}>
+        <motion.div {...fadeUp(0.2)} className="text-center mb-6">
+          <h3 className="font-bold mb-2" style={{ fontSize: 'clamp(1.35rem, 3vw, 2rem)', color: '#ffffff' }}>
             لماذا Match Hire؟
           </h3>
-          <p style={{ color: 'rgba(255,255,255,0.7)' }}>كل ما تحتاجه لتطوير مسيرتك المهنية في مكان واحد</p>
+          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.95rem' }}>كل ما تحتاجه لتطوير مسيرتك المهنية في مكان واحد</p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-5 mt-10 max-w-4xl mx-auto mb-8">
+        <div className="grid sm:grid-cols-2 gap-4 mt-6 max-w-4xl mx-auto mb-8">
           {whyItems.map((item, i) => (
             <motion.div
               key={i}
               {...fadeUp(0.15 + i * 0.1)}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="flex items-start gap-4 p-6 rounded-2xl text-right"
+              className="flex items-start gap-4 p-5 rounded-2xl"
               style={{
                 background: 'rgba(20,20,30,0.45)',
                 backdropFilter: 'blur(16px)',
@@ -180,14 +190,14 @@ export function LandingPage({ onNavigate }: LandingPageProps) {
               }}
             >
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: 'rgba(79,142,247,0.15)' }}
+                className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.2)' }}
               >
                 {item.icon}
               </div>
               <div>
-                <h4 className="font-semibold mb-1" style={{ color: '#ffffff' }}>{item.title}</h4>
-                <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>{item.desc}</p>
+                <h4 className="font-semibold mb-1" style={{ color: '#ffffff', fontSize: '0.95rem' }}>{item.title}</h4>
+                <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.5)' }}>{item.desc}</p>
               </div>
             </motion.div>
           ))}

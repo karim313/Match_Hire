@@ -1,44 +1,40 @@
+'use client'
+
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import { Home, LogIn, UploadCloud, BrainCircuit, LayoutDashboard, Target, UserPlus } from 'lucide-react';
+import Link from 'next/link';
+import { useSession, signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
+import { Home, LogIn, UploadCloud, LayoutDashboard, LogOut } from 'lucide-react';
 import CardNav from './CardNav';
 
-interface NavbarProps {
-  currentScreen: string;
-  onNavigate: (screen: string) => void;
-}
-
-export function Navbar({ currentScreen, onNavigate }: NavbarProps) {
+export function Navbar() {
+  const pathname = usePathname();
+  const { data: session } = useSession();
   
-  const navItems = useMemo(() => [
-    {
-      label: "المنصة",
-      bgColor: "rgba(20, 20, 30, 0.5)",
-      textColor: "#fff",
-      links: [
-        { label: "الرئيسية", onClick: () => onNavigate('landing'), ariaLabel: "الرئيسية", icon: <Home size={18} /> },
-        { label: currentScreen === 'login' ? "حساب جديد" : "تسجيل الدخول", onClick: () => onNavigate('login'), ariaLabel: "تسجيل الدخول", icon: currentScreen === 'login' ? <UserPlus size={18} /> : <LogIn size={18} /> }
-      ]
-    },
-    {
-      label: "خدماتنا", 
-      bgColor: "rgba(20, 20, 30, 0.5)",
-      textColor: "#fff",
-      links: [
-        { label: "رفع سيرة ذاتية", onClick: () => onNavigate('upload'), ariaLabel: "رفع سيرة ذاتية", icon: <UploadCloud size={18} /> },
-        { label: "تحليل المهارات", onClick: () => onNavigate('upload'), ariaLabel: "تحليل المهارات", icon: <BrainCircuit size={18} /> }
-      ]
-    },
-    {
-      label: "حسابي",
-      bgColor: "rgba(20, 20, 30, 0.5)", 
-      textColor: "#fff",
-      links: [
-        { label: "لوحة التحكم", onClick: () => onNavigate('dashboard'), ariaLabel: "لوحة التحكم", icon: <LayoutDashboard size={18} /> },
-        { label: "توصيات الوظائف", onClick: () => onNavigate('dashboard'), ariaLabel: "توصيات الوظائف", icon: <Target size={18} /> }
-      ]
-    }
-  ], [currentScreen, onNavigate]);
+  const navItems = useMemo(() => {
+    const items = [
+      {
+        label: "عام",
+        bgColor: "rgba(20, 20, 30, 0.5)",
+        textColor: "#fff",
+        links: [
+          { label: "الرئيسية", href: "/", ariaLabel: "الرئيسية", icon: <Home size={18} /> },
+          { label: "تسجيل الدخول", href: "/login", ariaLabel: "تسجيل الدخول", icon: <LogIn size={18} /> }
+        ]
+      },
+      {
+        label: "خدماتي", 
+        bgColor: "rgba(20, 20, 30, 0.5)",
+        textColor: "#fff",
+        links: [
+          { label: "رفع سيرة ذاتية", href: "/upload", ariaLabel: "رفع سيرة ذاتية", icon: <UploadCloud size={18} /> },
+          { label: "لوحة التحكم", href: "/dashboard", ariaLabel: "لوحة التحكم", icon: <LayoutDashboard size={18} /> }
+        ]
+      }
+    ];
+    return items;
+  }, [pathname]);
 
   const VideoLogo = (
     <div style={{
@@ -63,7 +59,7 @@ export function Navbar({ currentScreen, onNavigate }: NavbarProps) {
     >
       <CardNav
         logo={
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => onNavigate('landing')}>
+          <Link href="/" className="flex items-center gap-3 cursor-pointer">
             {VideoLogo}
             <span style={{
               fontWeight: 700, fontSize: '1.15rem',
@@ -72,7 +68,7 @@ export function Navbar({ currentScreen, onNavigate }: NavbarProps) {
             }}>
               Match Hire
             </span>
-          </div>
+          </Link>
         }
         items={navItems}
         baseColor="rgba(10, 10, 15, 0.6)"
@@ -81,7 +77,7 @@ export function Navbar({ currentScreen, onNavigate }: NavbarProps) {
         buttonTextColor="#ffffff"
         ease="power3.out"
         ctaText="ابدأ الآن"
-        onCtaClick={() => onNavigate('upload')}
+        ctaHref="/upload"
       />
     </motion.div>
   );

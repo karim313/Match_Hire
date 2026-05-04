@@ -1,4 +1,8 @@
+'use client'
+
 import { useLayoutEffect, useRef, useState, ReactNode } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { gsap } from 'gsap';
 import { ArrowUpLeft } from 'lucide-react';
 import './CardNav.css';
@@ -29,6 +33,7 @@ interface CardNavProps {
   buttonTextColor?: string;
   onCtaClick?: () => void;
   ctaText?: string;
+  ctaHref?: string;
 }
 
 const CardNav = ({
@@ -41,8 +46,10 @@ const CardNav = ({
   buttonBgColor = '#4f8ef7',
   buttonTextColor = '#ffffff',
   onCtaClick,
-  ctaText = 'ابدأ الآن'
+  ctaText = 'ابدأ الآن',
+  ctaHref
 }: CardNavProps) => {
+  const router = useRouter();
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const navRef = useRef<HTMLElement>(null);
@@ -53,34 +60,31 @@ const CardNav = ({
     const navEl = navRef.current;
     if (!navEl) return 260;
 
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    if (isMobile) {
-      const contentEl = navEl.querySelector('.card-nav-content') as HTMLElement;
-      if (contentEl) {
-        const wasVisible = contentEl.style.visibility;
-        const wasPointerEvents = contentEl.style.pointerEvents;
-        const wasPosition = contentEl.style.position;
-        const wasHeight = contentEl.style.height;
+    const contentEl = navEl.querySelector('.card-nav-content') as HTMLElement;
+    if (contentEl) {
+      const wasVisible = contentEl.style.visibility;
+      const wasPointerEvents = contentEl.style.pointerEvents;
+      const wasPosition = contentEl.style.position;
+      const wasHeight = contentEl.style.height;
 
-        contentEl.style.visibility = 'visible';
-        contentEl.style.pointerEvents = 'auto';
-        contentEl.style.position = 'static';
-        contentEl.style.height = 'auto';
+      contentEl.style.visibility = 'visible';
+      contentEl.style.pointerEvents = 'auto';
+      contentEl.style.position = 'static';
+      contentEl.style.height = 'auto';
 
-        // trigger reflow
-        void contentEl.offsetHeight;
+      // trigger reflow
+      void contentEl.offsetHeight;
 
-        const topBar = 60;
-        const padding = 16;
-        const contentHeight = contentEl.scrollHeight;
+      const topBar = 60;
+      const padding = 16;
+      const contentHeight = contentEl.scrollHeight;
 
-        contentEl.style.visibility = wasVisible;
-        contentEl.style.pointerEvents = wasPointerEvents;
-        contentEl.style.position = wasPosition;
-        contentEl.style.height = wasHeight;
+      contentEl.style.visibility = wasVisible;
+      contentEl.style.pointerEvents = wasPointerEvents;
+      contentEl.style.position = wasPosition;
+      contentEl.style.height = wasHeight;
 
-        return topBar + contentHeight + padding;
-      }
+      return topBar + contentHeight + padding;
     }
     return 260;
   };
@@ -192,14 +196,22 @@ const CardNav = ({
             {logo}
           </div>
 
-          <button
-            type="button"
-            onClick={onCtaClick}
-            className="card-nav-cta-button"
-            style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-          >
-            {ctaText}
-          </button>
+          {ctaHref ? (
+            <Link
+              href={ctaHref}
+              className="card-nav-cta-button"
+            >
+              {ctaText}
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={onCtaClick}
+              className="card-nav-cta-button"
+            >
+              {ctaText}
+            </button>
+          )}
         </div>
 
         <div className="card-nav-content" aria-hidden={!isExpanded}>
@@ -208,25 +220,39 @@ const CardNav = ({
               key={`${item.label}-${idx}`}
               className="nav-card"
               ref={setCardRef(idx)}
-              style={{ backgroundColor: item.bgColor, color: item.textColor }}
             >
               <div className="nav-card-label">{item.label}</div>
               <div className="nav-card-links">
                 {item.links?.map((lnk, i) => (
-                  <button
-                    key={`${lnk.label}-${i}`} 
-                    className="nav-card-link" 
-                    onClick={() => {
-                      lnk.onClick?.();
-                      closeMenu();
-                    }}
-                    aria-label={lnk.ariaLabel}
-                  >
-                    <span className="nav-card-link-icon">
-                      {lnk.icon ? lnk.icon : <ArrowUpLeft size={18} />}
-                    </span>
-                    <span>{lnk.label}</span>
-                  </button>
+                  lnk.href ? (
+                    <Link
+                      key={`${lnk.label}-${i}`}
+                      href={lnk.href}
+                      className="nav-card-link"
+                      onClick={() => closeMenu()}
+                      aria-label={lnk.ariaLabel}
+                    >
+                      <span className="nav-card-link-icon">
+                        {lnk.icon ? lnk.icon : <ArrowUpLeft size={18} />}
+                      </span>
+                      <span>{lnk.label}</span>
+                    </Link>
+                  ) : (
+                    <button
+                      key={`${lnk.label}-${i}`}
+                      className="nav-card-link"
+                      onClick={() => {
+                        lnk.onClick?.();
+                        closeMenu();
+                      }}
+                      aria-label={lnk.ariaLabel}
+                    >
+                      <span className="nav-card-link-icon">
+                        {lnk.icon ? lnk.icon : <ArrowUpLeft size={18} />}
+                      </span>
+                      <span>{lnk.label}</span>
+                    </button>
+                  )
                 ))}
               </div>
             </div>
