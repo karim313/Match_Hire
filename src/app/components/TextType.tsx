@@ -23,6 +23,7 @@ interface TextTypeProps {
   onSentenceComplete?: (sentence: string, index: number) => void;
   startOnVisible?: boolean;
   reverseMode?: boolean;
+  style?: React.CSSProperties;
 }
 
 const TextType = ({

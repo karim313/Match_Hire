@@ -9,6 +9,14 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/api/proxy/:path*',
+        destination: 'http://cvanalysisapi.runasp.net/api/:path*',
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig

@@ -164,7 +164,7 @@ export function PageLoader() {
               <motion.div
                 initial={{ width: '0%' }}
                 animate={{ width: '100%' }}
-                transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] as const }}
                 style={{
                   height: '100%',
                   background: 'linear-gradient(90deg, rgba(79,142,247,0.5), rgba(79,142,247,1))',

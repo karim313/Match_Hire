@@ -5,20 +5,32 @@ import { FileText, Download, Eye, CheckCircle, Clock, Home, Upload, Settings, Lo
 import { motion } from 'framer-motion';
 import { ThemeToggle } from './ThemeToggle';
 
-import { useAuth } from '@/context/AuthContext';
+import { useSession } from 'next-auth/react';
 import { cvService } from '@/services/cvService';
 import { jobService } from '@/services/jobService';
 import { useState, useEffect } from 'react';
 
 export function Dashboard() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
+  const displayName = user?.fullName || user?.name || (user?.email ? user.email.split('@')[0] : 'مستخدم غير معروف');
   const [documents, setDocuments] = useState<any[]>([]);
   const [stats, setStats] = useState({ cvCount: 0, views: 0, matches: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // If session is still loading, wait
+    if (session === undefined) return;
+
+    // If no session, redirect to login
+    if (!session) {
+      router.push('/login');
+      return;
+    }
+
     const fetchData = async () => {
+      setLoading(true);
       try {
         const [cvsData, jobsData] = await Promise.all([
           cvService.getMyCvs(),
@@ -28,17 +40,18 @@ export function Dashboard() {
         setDocuments(cvsData || []);
         setStats({
           cvCount: cvsData?.length || 0,
-          views: 0, // Not present in the provided JSON
+          views: 0,
           matches: jobsData?.length || 0
         });
       } catch (err) {
-        console.error('Error fetching dashboard data:', err);
+        console.error('Detailed Dashboard Error:', err);
       } finally {
         setLoading(false);
       }
     };
+    
     fetchData();
-  }, []);
+  }, [session, router]);
 
   return (
     <div className="w-full relative z-10">
@@ -46,7 +59,7 @@ export function Dashboard() {
         <div className="mb-8 mt-10">
           <h2 className="mb-2 section-title">لوحة التحكم</h2>
           <p className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>
-            مرحباً بك، {user?.name || 'مستخدم'}. إليك ملخص نشاطك وسيرك الذاتية
+            مرحباً بك، {displayName}. إليك ملخص نشاطك وسيرك الذاتية
           </p>
         </div>
 
@@ -76,7 +89,9 @@ export function Dashboard() {
             <div className="icon-badge mb-4">
               <CheckCircle className="w-5 h-5" />
             </div>
-            <div className="text-3xl font-bold mb-1 text-white">95%</div>
+            <div className="text-3xl font-bold mb-1 text-white">
+              {stats.cvCount > 0 ? '100%' : '70%'}
+            </div>
             <div className="text-sm" style={{ color: 'rgba(255,255,255,0.5)' }}>نسبة الاكتمال</div>
           </div>
         </motion.div>
@@ -85,11 +100,11 @@ export function Dashboard() {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <h3 className="mb-1 font-bold" style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.5rem)' }}>
-                {user?.name || 'مستخدم غير معروف'}
+                {displayName}
               </h3>
               <p className="opacity-80 mb-3 text-sm">{user?.email || 'لا يوجد بريد إلكتروني'}</p>
               <span className="px-3 py-1 bg-white/20 rounded-full text-xs">
-                عضو منذ 2026
+                {user?.role === 'User' ? 'مستخدم' : user?.role || 'مستخدم'}
               </span>
             </div>
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
@@ -115,7 +130,17 @@ export function Dashboard() {
           <div className="space-y-3">
             {documents.length > 0 ? (
               documents.map((doc, index) => {
-                const skills = doc.analysis?.skills ? JSON.parse(doc.analysis.skills) : [];
+                let skills = [];
+                try {
+                  if (doc.analysis?.skills) {
+                    skills = typeof doc.analysis.skills === 'string' 
+                      ? JSON.parse(doc.analysis.skills) 
+                      : doc.analysis.skills;
+                  }
+                } catch (e) {
+                  console.error('Error parsing skills for doc:', doc.id, e);
+                }
+                
                 return (
                   <div key={doc.id || index} className="job-card flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -123,10 +148,10 @@ export function Dashboard() {
                         <FileText className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="font-medium text-white mb-0.5">{doc.originalFileName}</p>
+                        <p className="font-medium text-white mb-0.5">{doc.originalFileName || 'ملف غير معروف'}</p>
                         <div className="flex items-center gap-3 text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                          <span>📅 {new Date(doc.uploadedAt).toLocaleDateString('ar-EG')}</span>
-                          <span>🎯 {skills.length} مهارة</span>
+                          <span>📅 {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString('ar-EG') : 'تاريخ غير معروف'}</span>
+                          <span>🎯 {Array.isArray(skills) ? skills.length : 0} مهارة</span>
                         </div>
                       </div>
                     </div>
@@ -136,7 +161,7 @@ export function Dashboard() {
                         مكتمل
                       </span>
                       <a
-                        href={`${process.env.NEXT_PUBLIC_API_URL}/Cv/download/${doc.storedFileName}`}
+                        href={`/api/proxy/Cv/download/${doc.storedFileName}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-2 rounded-lg transition-all hover:bg-primary/10"

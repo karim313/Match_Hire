@@ -20,7 +20,9 @@ export function Navbar() {
         textColor: "#fff",
         links: [
           { label: "الرئيسية", href: "/", ariaLabel: "الرئيسية", icon: <Home size={18} /> },
-          { label: "تسجيل الدخول", href: "/login", ariaLabel: "تسجيل الدخول", icon: <LogIn size={18} /> }
+          session ? 
+            { label: "تسجيل الخروج", onClick: () => signOut({ callbackUrl: '/login' }), ariaLabel: "تسجيل الخروج", icon: <LogOut size={18} /> } :
+            { label: "تسجيل الدخول", href: "/login", ariaLabel: "تسجيل الدخول", icon: <LogIn size={18} /> }
         ]
       },
       {
@@ -34,7 +36,7 @@ export function Navbar() {
       }
     ];
     return items;
-  }, [pathname]);
+  }, [pathname, session]);
 
   const VideoLogo = (
     <div style={{
@@ -55,7 +57,7 @@ export function Navbar() {
     <motion.div
       initial={{ y: -70, opacity: 0 }}
       animate={{ y: 0,   opacity: 1 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }}
     >
       <CardNav
         logo={
