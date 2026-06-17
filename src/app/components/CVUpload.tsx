@@ -4,10 +4,15 @@ import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, FileText, Check, Briefcase, TrendingUp, Loader2, X, FileCheck2, Brain, Zap, Target } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cvService } from '@/services/cvService';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
+import {
+  extractMatchPercent,
+  getJobMatchPercent,
+  parseSkills,
+  parseSuggestedJobs,
+} from '@/lib/cvAnalysis';
 
 /* ─── Drag & Drop Upload Zone ─────────────────────── */
 function UploadZone({
@@ -329,7 +334,7 @@ export function CVUpload() {
   const { data: session } = useSession();
   const [uploaded, setUploaded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [results, setResults] = useState<{ skills: string[]; jobs: any[] } | null>(null);
+  const [results, setResults] = useState<{ skills: string[]; jobs: any[]; matchPercent: number } | null>(null);
   const [fileName, setFileName] = useState('');
   const [pendingFile, setPendingFile] = useState<File | null>(null);
 
@@ -349,15 +354,26 @@ export function CVUpload() {
     formData.append('file', file);
 
     try {
-      const data = await cvService.analyzeAndSuggestJobs(formData);
-      setResults({
-        skills: data.extractedWords?.skills || [],
-        jobs: data.suggestedJobs || [],
+      const response = await fetch('/api/cv/analyze-and-suggest-jobs', {
+        method: 'POST',
+        body: formData,
       });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'حدث خطأ أثناء تحليل الملف.');
+      }
+
+      const skills = parseSkills(data);
+      const jobs = parseSuggestedJobs(data);
+      const matchPercent = extractMatchPercent(data, skills, jobs) ?? 0;
+
+      setResults({ skills, jobs, matchPercent });
       setUploaded(true);
       toast.success('تم تحليل السيرة الذاتية بنجاح!');
     } catch (err: any) {
-      toast.error('حدث خطأ أثناء تحليل الملف. يرجى المحاولة مرة أخرى.');
+      toast.error(err.message || 'حدث خطأ أثناء تحليل الملف. يرجى المحاولة مرة أخرى.');
       console.error(err);
       setPendingFile(null);
     } finally {
@@ -526,7 +542,7 @@ export function CVUpload() {
                     </div>
                     <p className="text-white/50 text-[10px] mb-1 uppercase font-bold">نسبة التوافق</p>
                     <div className="text-5xl font-black text-primary mb-2">
-                      <CountUp end={85} />
+                      <CountUp end={results.matchPercent} />
                     </div>
                     <p className="text-white/40 text-[9px]">
                       تم تحليل مهاراتك ومقارنتها بسوق العمل.
@@ -541,7 +557,9 @@ export function CVUpload() {
                   </div>
 
                   <div className="space-y-2">
-                    {results.jobs.map((job, i) => (
+                    {results.jobs.map((job, i) => {
+                      const jobMatch = getJobMatchPercent(job);
+                      return (
                       <motion.a
                         key={i}
                         href={job.url || '#'}
@@ -561,9 +579,16 @@ export function CVUpload() {
                             <span className="text-white/35 text-[10px]">{job.source || 'Wuzzuf'}</span>
                           </div>
                         </div>
-                        <span className="text-white/20 group-hover:text-primary transition-colors">←</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {jobMatch !== null && (
+                            <span className="text-[10px] font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
+                              {jobMatch}%
+                            </span>
+                          )}
+                          <span className="text-white/20 group-hover:text-primary transition-colors">←</span>
+                        </div>
                       </motion.a>
-                    ))}
+                    );})}
                   </div>
 
                   <button
