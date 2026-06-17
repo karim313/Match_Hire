@@ -15,6 +15,9 @@ const tajawal = Tajawal({
 export const metadata: Metadata = {
   title: 'Match Hire - تحليل السيرة الذاتية ومطابقة الوظائف',
   description: 'منصة متقدمة لتحليل السيرة الذاتية ومطابقة الوظائف باستخدام الذكاء الاصطناعي لتمكين مستقبلك المهني.',
+  icons: {
+    icon: '/icon.svg',
+  },
 }
 
 export default function RootLayout({
