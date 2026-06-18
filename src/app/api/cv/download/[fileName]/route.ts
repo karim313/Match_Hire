@@ -11,7 +11,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ fileName
         const headers: any = {};
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Cv/download/${fileName}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://cvanalysisapp.runasp.net/api"}/Cv/download/${fileName}`, {
             method: "GET",
             headers: headers
         });

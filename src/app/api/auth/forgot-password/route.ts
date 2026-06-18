@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Auth/forgot-password`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://cvanalysisapp.runasp.net/api"}/Auth/forgot-password`, {
             method: "POST",
             body: JSON.stringify(body),
             headers: { "Content-Type": "application/json" }

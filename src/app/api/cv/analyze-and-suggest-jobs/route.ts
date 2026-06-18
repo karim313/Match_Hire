@@ -12,7 +12,7 @@ export async function POST(req: Request) {
         const headers: any = {};
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Cv/analyze-and-suggest-jobs`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://cvanalysisapp.runasp.net/api"}/Cv/analyze-and-suggest-jobs`, {
             method: "POST",
             body: formData,
             headers: headers

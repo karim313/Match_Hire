@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? '';
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://cvanalysisapp.runasp.net/api").replace(/\/$/, '');
 
 export function getAnalyzeEndpoint() {
   return `${API_BASE}/Cv/analyze-and-suggest-jobs`;

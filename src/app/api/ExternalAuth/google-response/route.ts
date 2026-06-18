@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL}/ExternalAuth/google-response?${searchParams.toString()}`;
+    const backendUrl = `${process.env.NEXT_PUBLIC_API_URL || "http://cvanalysisapp.runasp.net/api"}/ExternalAuth/google-response?${searchParams.toString()}`;
 
     const res = await fetch(backendUrl, {
       method: "GET",

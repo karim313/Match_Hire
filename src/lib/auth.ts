@@ -13,7 +13,7 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Auth/login`, {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://cvanalysisapp.runasp.net/api"}/Auth/login`, {
             method: 'POST',
             body: JSON.stringify({
               email: credentials.email,

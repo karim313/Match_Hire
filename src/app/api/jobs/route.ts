@@ -10,7 +10,7 @@ export async function GET() {
         const headers: any = { "Content-Type": "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/Jobs`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://cvanalysisapp.runasp.net/api"}/Jobs`, {
             method: "GET",
             headers: headers
         });
