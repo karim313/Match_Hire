@@ -352,17 +352,6 @@ export function Dashboard() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDownload(doc.storedFileName, doc.originalFileName);
-                          }}
-                          className="btn-ghost !p-2 border border-white/10 rounded-lg hover:bg-white/5"
-                          title="تحميل الملف"
-                          aria-label="تحميل الملف"
-                        >
-                          <Download className="w-4 h-4" aria-hidden />
-                        </button>
                         <span className="hidden sm:inline-flex saas-badge">
                           <CheckCircle className="w-3 h-3" aria-hidden />
                           مكتمل
