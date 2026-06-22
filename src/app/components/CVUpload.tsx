@@ -374,7 +374,6 @@ export function CVUpload() {
       toast.success('تم تحليل السيرة الذاتية بنجاح!');
     } catch (err: any) {
       toast.error(err.message || 'حدث خطأ أثناء تحليل الملف. يرجى المحاولة مرة أخرى.');
-      console.error(err);
       setPendingFile(null);
     } finally {
       setAnalyzing(false);
