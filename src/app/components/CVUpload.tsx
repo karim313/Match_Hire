@@ -390,7 +390,7 @@ export function CVUpload() {
   };
 
   return (
-    <div className="w-full relative z-10 min-h-screen overflow-x-hidden">
+    <div className="w-full relative z-50 min-h-screen overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 mt-20">
 
         {/* Header */}

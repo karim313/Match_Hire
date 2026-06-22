@@ -390,9 +390,8 @@ body {
 }
 
 .saas-modal-overlay {
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: #09090b; /* Fully opaque background */
+  z-index: 1000 !important;
 }
 
 .saas-section-divider {

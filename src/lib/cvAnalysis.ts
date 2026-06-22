@@ -71,7 +71,7 @@ export function extractMatchPercent(
     toNumber(analysis.score) ??
     toNumber(analysis.compatibilityScore);
 
-  if (direct !== null) return clampPercent(direct);
+  if (direct !== null && direct > 0) return clampPercent(direct);
 
   const jobScores = jobs
     .map(
@@ -81,7 +81,7 @@ export function extractMatchPercent(
         toNumber(job.score) ??
         toNumber(job.compatibility)
     )
-    .filter((score): score is number => score !== null);
+    .filter((score): score is number => score !== null && score > 0);
 
   if (jobScores.length > 0) {
     const average = jobScores.reduce((sum, score) => sum + score, 0) / jobScores.length;
@@ -102,5 +102,5 @@ export function getJobMatchPercent(job: Record<string, unknown>): number | null 
     toNumber(job.score) ??
     toNumber(job.compatibility);
 
-  return score !== null ? clampPercent(score) : null;
+  return score !== null && score > 0 ? clampPercent(score) : null;
 }

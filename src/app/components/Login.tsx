@@ -101,28 +101,6 @@ export function Login() {
           </div>
 
           <div className="bg-card/50 backdrop-blur-2xl border border-border shadow-2xl rounded-2xl sm:rounded-3xl p-5 sm:p-8">
-            {/* Google OAuth button */}
-            <button
-              type="button"
-              onClick={() => { window.location.href = '/api/ExternalAuth/google-login'; }}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3.5 mb-5 rounded-xl border border-border bg-background hover:bg-accent active:scale-[0.98] transition-all duration-200 text-sm font-medium text-foreground shadow-sm"
-            >
-              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" aria-hidden>
-                <path fill="#EA4335" d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.68 1.54 14.98 1 12 1 7.35 1 3.37 3.67 1.39 7.56l3.85 2.99c.92-2.75 3.48-4.51 6.76-4.51z"/>
-                <path fill="#4285F4" d="M23.49 12.27c0-.81-.07-1.59-.2-2.36H12v4.51h6.46c-.28 1.48-1.12 2.74-2.38 3.58l3.7 2.87c2.16-1.99 3.41-4.92 3.41-8.6z"/>
-                <path fill="#FBBC05" d="M5.24 14.55c-.24-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29L1.39 6.98C.5 8.78 0 10.78 0 12.92s.5 4.14 1.39 5.94l3.85-3.31z"/>
-                <path fill="#34A853" d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.7-2.87c-1.03.69-2.35 1.1-4.26 1.1-3.28 0-5.84-2.16-6.76-4.91L1.39 16.7C3.37 20.63 7.35 23 12 23z"/>
-              </svg>
-              {isLogin ? 'تسجيل الدخول باستخدام Google' : 'التسجيل باستخدام Google'}
-            </button>
-
-            {/* Divider */}
-            <div className="relative flex items-center gap-3 mb-5">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">أو</span>
-              <div className="flex-1 h-px bg-border" />
-            </div>
-
             <form className="space-y-4 sm:space-y-5" onSubmit={handleSubmit}>
               <AnimatePresence mode="wait">
                 {!isLogin && (
@@ -163,11 +141,6 @@ export function Login() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider">كلمة المرور</label>
-                  {isLogin && (
-                    <Link href="#" className="text-xs font-medium text-primary hover:text-primary/80 transition-colors">
-                      نسيت كلمة المرور؟
-                    </Link>
-                  )}
                 </div>
                 <input
                   type="password"

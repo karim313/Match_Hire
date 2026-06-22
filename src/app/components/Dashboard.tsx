@@ -77,27 +77,33 @@ export function Dashboard() {
           new Date(b.uploadedAt || 0).getTime() - new Date(a.uploadedAt || 0).getTime()
         );
         
-        const latestCv = sortedCvs[0];
-        let lastMatchCount = 0;
-        let matchPercent: number | null = null;
         const allJobs = Array.isArray(allJobsData) ? allJobsData : [];
 
-        if (latestCv) {
-          const analysis = latestCv.analysis || {};
+        // Helper to get jobs list for a CV
+        const getCvJobs = (cv: any) => {
+          const analysis = cv.analysis || {};
           const jobsSource = analysis.suggestedJobs || analysis.suggested_jobs || 
                              analysis.jobs || analysis.jobSuggestions || analysis.matchedJobs || 
-                             analysis.jobMatches || latestCv.suggestedJobs || latestCv.jobs;
+                             analysis.jobMatches || cv.suggestedJobs || cv.jobs;
           
           let jobs = [];
           if (jobsSource) {
-            jobs = typeof jobsSource === 'string' ? JSON.parse(jobsSource) : jobsSource;
+            try {
+              jobs = typeof jobsSource === 'string' ? JSON.parse(jobsSource) : jobsSource;
+            } catch (e) {
+              jobs = [];
+            }
           }
 
           // Fallback matching if empty
           if (!Array.isArray(jobs) || jobs.length === 0) {
             let skills = [];
             if (analysis.skills) {
-              skills = typeof analysis.skills === 'string' ? JSON.parse(analysis.skills) : analysis.skills;
+              try {
+                skills = typeof analysis.skills === 'string' ? JSON.parse(analysis.skills) : analysis.skills;
+              } catch (e) {
+                skills = [];
+              }
             }
             if (Array.isArray(skills) && skills.length > 0) {
               jobs = allJobs.filter((job: any) => 
@@ -107,21 +113,51 @@ export function Dashboard() {
               ).slice(0, 10);
             }
           }
+          return Array.isArray(jobs) ? jobs : [];
+        };
+
+        // Aggregating statistics across all CVs
+        const uniqueJobsMap = new Map<string, any>();
+        let compatibilityScoresSum = 0;
+        let validCvsWithScoresCount = 0;
+
+        sortedCvs.forEach((cv: any) => {
+          const cvJobs = getCvJobs(cv);
           
-          lastMatchCount = Array.isArray(jobs) ? jobs.length : 0;
-          matchPercent = extractMatchPercent(
-            { ...latestCv, analysis },
-            parseSkills({ ...latestCv, analysis }),
-            parseSuggestedJobs({ ...latestCv, analysis, jobs: jobs.length ? jobs : undefined })
+          // Add unique jobs
+          cvJobs.forEach((job: any) => {
+            if (job && job.title) {
+              const key = job.url || job.title;
+              if (!uniqueJobsMap.has(key)) {
+                uniqueJobsMap.set(key, job);
+              }
+            }
+          });
+
+          // Calculate match percent for this CV
+          const percent = extractMatchPercent(
+            { ...cv, analysis: cv.analysis || {} },
+            parseSkills({ ...cv, analysis: cv.analysis || {} }),
+            parseSuggestedJobs({ ...cv, analysis: cv.analysis || {}, jobs: cvJobs.length ? cvJobs : undefined })
           );
-        }
+
+          if (percent !== null) {
+            compatibilityScoresSum += percent;
+            validCvsWithScoresCount++;
+          }
+        });
+
+        const totalUniqueMatches = uniqueJobsMap.size;
+        const averageMatchPercent = validCvsWithScoresCount > 0 
+          ? Math.round(compatibilityScoresSum / validCvsWithScoresCount) 
+          : null;
 
         setDocuments(sortedCvs);
         setStats({
           cvCount: sortedCvs.length,
           views: 0,
-          matches: lastMatchCount,
-          matchPercent,
+          matches: totalUniqueMatches,
+          matchPercent: averageMatchPercent,
         });
         (window as any).allJobs = allJobs;
       } catch (err) {
@@ -169,7 +205,7 @@ export function Dashboard() {
   };
 
   return (
-    <div className="w-full relative z-10">
+    <div className="w-full relative z-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         {/* Page header */}
         <header className="saas-page-header mt-20 sm:mt-24">
@@ -362,14 +398,14 @@ export function Dashboard() {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-6 saas-modal-overlay"
+            className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center p-0 sm:p-6 saas-modal-overlay"
             onClick={() => setSelectedCv(null)}
           >
             <motion.div 
               initial={{ scale: 0.96, y: 16 }}
               animate={{ scale: 1, y: 0 }}
               transition={{ duration: 0.2 }}
-              className="w-full sm:max-w-2xl max-h-[92dvh] sm:max-h-[85vh] overflow-hidden flex flex-col bg-zinc-900 border border-white/10 rounded-t-2xl sm:rounded-2xl shadow-2xl"
+              className="w-full sm:max-w-2xl max-h-[92dvh] sm:max-h-[85vh] overflow-hidden flex flex-col bg-[#0f0f12] border border-white/10 rounded-t-2xl sm:rounded-2xl shadow-2xl z-[1000]"
               onClick={e => e.stopPropagation()}
             >
               <div className="px-6 py-5 border-b border-white/10 flex items-start justify-between gap-4">
@@ -418,28 +454,17 @@ export function Dashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {(() => {
                       try {
-                        const analysis = selectedCv.analysis || {};
-                        const jobsSource = analysis.suggestedJobs || analysis.suggested_jobs || 
-                                           analysis.jobs || analysis.jobSuggestions || analysis.matchedJobs || 
-                                           analysis.jobMatches || selectedCv.suggestedJobs || selectedCv.jobs;
-                        
-                        let jobs = [];
-                        if (jobsSource) {
-                          jobs = typeof jobsSource === 'string' ? JSON.parse(jobsSource) : jobsSource;
-                        }
+                        let jobs = parseSuggestedJobs(selectedCv);
 
-                        if (!Array.isArray(jobs) || jobs.length === 0) {
+                        if (!jobs || jobs.length === 0) {
                           const allJobs = (window as any).allJobs || [];
-                          let skills = [];
-                          if (analysis.skills) {
-                            skills = typeof analysis.skills === 'string' ? JSON.parse(analysis.skills) : analysis.skills;
-                          }
-                          if (Array.isArray(skills) && skills.length > 0) {
+                          const skills = parseSkills(selectedCv);
+                          if (skills.length > 0) {
                             jobs = allJobs.filter((job: any) => 
-                              skills.some(skill => 
+                              skills.some((skill: string) => 
                                 job.title?.toLowerCase().includes(skill.toLowerCase())
                               )
-                            ).slice(0, 10);
+                            );
                           }
                         }
                         
